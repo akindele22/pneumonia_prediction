@@ -1,9 +1,9 @@
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from Feature_extractor import FEATURE_PEDICTION
 import os
 import numpy as np 
-
+from werkzeug.utils import secure_filename   
 
 app = Flask(__name__)
 @app.route('/', methods=['GET'])
@@ -11,6 +11,7 @@ def hello_world():
     return render_template('index.html')
 
 @app.route('/', methods=['POST'])
+
 def predict():
     prediction2 = 'no image found'
     try:
@@ -49,6 +50,16 @@ def predict():
     except PermissionError:
         pass
     return render_template('index.html', prediction = prediction2)
+app.config['UPLOAD_PATH'] = 'images/'             # Storage path    
+@app.route("/",methods=['GET','POST'])
+def upload_file():                                       # This method is used to upload files 
+        if request.method == 'POST':
+                f = request.files['imagefile']
+                print(f.filename)
+                #f.save(secure_filename(f.filename))
+                filename = secure_filename(f.filename)
+                f.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+                return redirect("/")           # Redirect to route '/' for displaying images on fromt end
 
 if __name__ == '__main__':
     app.run(port=3000, debug=True)
